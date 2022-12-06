@@ -1,0 +1,93 @@
+Container security
+
+$ docker run --user=1001 ubuntu sleep 3600
+$ docker run --cap-add MAC_ADMIN ubuntu
+
+Security Context
+On pod or container:
+...
+spec:
+  securityContext:
+    runAsUser: 1000
+    capabilities:
+      add: ["MAC_ADMIN"]
+
+02:
+Edit the pod 'ubuntu-sleeper' to run the sleep process with user ID 1010.
+
+$ kubectl get pod ubuntu-sleeper -o yaml > pod-ubuntu-sleeper.yaml
+
+spec:
+  securityContext:
+    runAsUser: 1010
+
+$ kubectl delete  -f pod-ubuntu-sleeper.yaml
+$ kubectl apply  -f pod-ubuntu-sleeper.yaml
+
+03:
+A Pod definition file named 'multi-pod.yaml' is given. With what user are the processes in the 'web' container started?
+
+The pod is created with multiple containers and security contexts defined at the POD and Container level
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-pod
+spec:
+  securityContext:
+    runAsUser: 1001
+  containers:
+  -  image: ubuntu
+     name: web
+     command: ["sleep", "5000"]
+     securityContext:
+      runAsUser: 1002
+
+  -  image: ubuntu
+     name: sidecar
+     command: ["sleep", "5000"]
+     
+Answer: 1002
+
+04:
+Try to run the below command in the pod 'ubuntu-sleeper' to set the date. Are you allowed to set date on the POD?
+
+date -s '19 APR 2012 11:14:00'
+
+$ kubectl exec -it ubuntu-sleeper -- date -s '19 APR 2012 11:14:00'
+
+Answer: No
+
+05:
+Update pod 'ubuntu-sleeper' to run as Root user and with the 'SYS_TIME' capability.
+
+
+
+Note: Only make the necessary changes. Do not modify the name of the pod.
+
+$ kubectl get pod ubuntu-sleeper -o yaml > pod-ubuntu-sleeper-05.yaml
+..
+spec:
+  containers:
+  - command:
+    - sleep
+    - "4800"
+    image: ubuntu
+    imagePullPolicy: Always
+    name: ubuntu-sleeper
+    resources: {}
+    securityContext:
+      capabilities:
+        add: ["SYS_TIME"]
+...
+      
+$ kubectl delete  -f pod-ubuntu-sleeper-05.yaml;  kubectl apply  -f pod-ubuntu-sleeper-05.yaml
+
+07: 
+Now try to run the below command in the pod to set the date. If the security capability was added correctly, it should work. If it doesn't make sure you changed the user back to root.
+
+date -s '19 APR 2012 11:14:00'
+
+
+$ kubectl exec -it ubuntu-sleeper -- date -s '19 APR 2012 11:14:00'

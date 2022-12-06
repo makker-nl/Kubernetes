@@ -1,0 +1,15 @@
+Count namespaces
+kubectl get ns --no-headers|wc -l
+
+Count pods in namespace resarch
+kubectl -n research get pods --no-headers
+
+Run pod in namespace finance
+$ kubectl run redis --image=redis --dry-run -o yaml > pod.yaml
+edit pod.yaml and add namespace: finance
+$ kubectl apply -f pod.yaml
+Or
+$ kubectl run redis --image=redis -n finance
+
+Get service
+kubectl -n dev get svc

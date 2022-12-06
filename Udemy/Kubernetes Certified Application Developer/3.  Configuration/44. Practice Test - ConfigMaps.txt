@@ -1,0 +1,151 @@
+1:
+How many PODs exist on the system?
+in the current(default) namespace
+
+$ root@controlplane:~# kubectl get pods
+NAME           READY   STATUS    RESTARTS   AGE
+webapp-color   1/1     Running   0          106s
+
+Answer: 1
+
+02:
+What is the environment variable name set on the container in the pod?
+
+$ root@controlplane:~# kubectl describe pod webapp-color        
+Name:         webapp-color
+Namespace:    default
+...
+Containers:
+  webapp-color:
+    Container ID:   docker://ebb6e0a06b608b65971704117738b5129462fa292c41380fe2302b71252fa7b9
+    Image:          kodekloud/webapp-color
+...
+    Environment:
+      APP_COLOR:  pink
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-f59q8 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  default-token-f59q8:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-f59q8
+    Optional:    false
+...
+Answer: APP_COLOR
+
+03:
+What is the value set on the environment variable APP_COLOR on the container in the pod?
+
+Answer: pink
+
+04:
+View the web application UI by clicking on the Webapp Color Tab above your terminal.
+
+This is located on the right side.
+
+05:
+$ kubectl get pod webapp-color -o yaml> pod-webapp-color.yaml
+$ vi pod-webapp-color.yaml 
+-> edit APP_COLOR
+$kubectl delete pod -f pod-webapp-color.yaml 
+$ kubectl delete pod webapp-color      
+pod "webapp-color" deleted
+$ kubectl apply  -f pod-webapp-color.yaml 
+pod/webapp-color created
+
+07:
+How many ConfigMaps exist in the environment?
+
+kubectl get ConfigMaps
+NAME               DATA   AGE
+db-config          3      13s
+kube-root-ca.crt   1      18m
+
+08:
+Identify the database host from the config map db-config
+
+$ kubectl describe ConfigMap db-config
+Name:         db-config
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+DB_PORT:
+----
+3306
+DB_HOST:
+----
+SQL01.example.com
+DB_NAME:
+----
+SQL01
+Events:  <none>
+
+Answer: SQL01.example.com
+
+
+09:
+Create a new ConfigMap for the webapp-color POD. Use the spec given below.
+ConfigName Name: webapp-config-map
+Data: APP_COLOR=darkblue 
+
+$ kubectl get ConfigMap db-config -o yaml> cm-webapp-color.yaml
+$ vi cm-webapp-color.yaml 
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webapp-config-map
+  namespace: default
+data:
+  APP_COLOR: darkblue
+  
+$ kubectl apply cm-webapp-color.yaml 
+
+Alternatives:
+$ kubectl create configmap <configmap-name> --from-literal=<key>=<value>
+$ kubectl create configmap \
+   app-config --from-literal=APP_COLOR=blue \
+              --from-literal=APP_MOD=prod
+
+$ kubectl create configmap <config-name> --from-file=<path-to-file>
+$ kubectl create configmap app-config --from-file=app_config.properties
+
+ENV:
+  envFrom:
+    - configMapRef:
+        name: app-config
+...
+SINGLE ENV:
+  env:
+    - name: APP_COLOR
+      valueFrom:
+         configMapKeyRef:
+           name: app-config
+           key: APP_COLOR
+VOLUME:
+  volumes:
+  - name: app-config-volume
+    configMap:
+      name: app-config
+
+10:
+Update the environment variable on the POD to use the newly created ConfigMap
+
+Note: Delete and recreate the POD. Only make the necessary changes. Do not modify the name of the Pod.
+
+vi pod-webapp-color.yaml
+->
+spec:
+  containers:
+  - envFrom:
+    - configMapRef:      
+        name: webapp-config-map
+

@@ -1,0 +1,63 @@
+02:
+$ kubectl get nodes --show-labels
+NAME           STATUS   ROLES                  AGE     VERSION   LABELS
+controlplane   Ready    control-plane,master   5m7s    v1.20.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=controlplane,kubernetes.io/os=linux,node-role.kubernetes.io/control-plane=,node-role.kubernetes.io/master=
+node01         Ready    <none>                 3m22s   v1.20.0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=node01,kubernetes.io/os=linux
+
+03:
+Apply a label color=blue to node node01
+$ kubectl label nodes <your-node-name> disktype=ssd
+$ kubectl label nodes node01 color=blue
+
+
+$ kubectl create deployment blue --image=nginx --replicas=3
+
+
+07:
+Under pod spec:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: color
+                operator: In
+                values:
+                - blue
+                
+08:
+Create a new deployment named red with the nginx image and 2 replicas, and ensure it gets placed on the master/controlplane node only.
+
+Use the label - node-role.kubernetes.io/master - set on the master/controlplane node.
+
+vi pod_red.yaml:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: red
+  name: red
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: red
+  template:
+    metadata:
+      labels:
+        app: red
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      containers:
+      - image: nginx
+        name: nginx
+        
+$ kubectl apply -f depl_red.yaml

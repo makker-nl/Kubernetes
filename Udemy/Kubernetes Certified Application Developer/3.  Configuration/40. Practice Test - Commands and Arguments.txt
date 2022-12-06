@@ -1,0 +1,233 @@
+01:
+$ kubectl get pods --no-headers|wc -l
+
+02:
+What is the command used to run the pod "ubuntu-sleeper" ? 
+
+$ kubectl edit pod ubuntu-sleeper
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2021-06-09T15:27:37Z"
+  name: ubuntu-sleeper
+  namespace: default
+  resourceVersion: "723"
+  uid: b562079d-b291-4437-8355-971b1443f974
+spec:
+  containers:
+  - command:
+    - sleep
+    - "4800"
+    image: ubuntu
+    imagePullPolicy: Always
+    name: ubuntu
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-dwkgj
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: controlplane
+  ...
+
+Answer: sleep 4800
+
+03:
+Create a pod with the ubuntu image to run a container to sleep for 5000 seconds. Modify the file ubuntu-sleeper-2.yaml.
+
+$ vi ubuntu-sleeper-2.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-sleeper-2
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command:
+    - sleep
+    - "5000"
+$ kubectl apply -f ubuntu-sleeper-2.yaml 
+pod/ubuntu-sleeper-2 created
+$ kubectl get pods
+NAME               READY   STATUS    RESTARTS   AGE
+ubuntu-sleeper     1/1     Running   0          4m44s
+ubuntu-sleeper-2   1/1     Running   0          8s
+
+04:
+Create a pod using the file named "ubuntu-sleeper-3.yaml". There is something wrong with it. Try to fix it!
+
+$ vi ubuntu-sleeper-3.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-sleeper-3
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command:
+      - sleep
+      - "1200"
+# arguments 1200 should be in quotes
+$ kubectl apply -f ubuntu-sleeper-3.yaml 
+
+05:
+Update the pod "ubuntu-sleeper-3" to sleep for 2000 seconds.
+
+$ vi ubuntu-sleeper-3.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-sleeper-3
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command:
+      - sleep
+      - "2000"
+      
+$ kubectl apply -f ubuntu-sleeper-3.yaml 
+The Pod "ubuntu-sleeper-3" is invalid: spec: Forbidden: pod updates may not change fields other than `spec.containers[*].image`, `spec.initContainers[*].image`, `spec.activeDeadlineSeconds` or `spec.tolerations` (only additions to existing tolerations)
+...
+$ kubectl delete pod ubuntu-sleeper-3
+$ kubectl apply -f ubuntu-sleeper-3.yaml 
+
+06:
+Inspect the file Dockerfile given at /root/webapp-color. What command is run at container startup?
+
+vi Dockerfile
+FROM python:3.6-alpine
+  
+RUN pip install flask
+
+COPY . /opt/
+
+EXPOSE 8080
+
+WORKDIR /opt
+
+ENTRYPOINT ["python", "app.py"]
+
+Answer: python app.py
+
+07:
+Inspect the file Dockerfile2 given at /root/webapp-color. What command is run at container startup?
+
+vi Dockerfile2
+FROM python:3.6-alpine
+  
+RUN pip install flask
+
+COPY . /opt/
+
+EXPOSE 8080
+
+WORKDIR /opt
+
+ENTRYPOINT ["python", "app.py"]
+
+CMD ["--color", "red"]
+
+Answer: python app.py --color red
+
+08:
+Inspect the two files under directory webapp-color-2. What command is run at container startup?
+
+Assume the image was created from the Dockerfile in this folder
+
+vi Dockerfile2
+FROM python:3.6-alpine
+  
+RUN pip install flask
+
+COPY . /opt/
+
+EXPOSE 8080
+
+WORKDIR /opt
+
+ENTRYPOINT ["python", "app.py"]
+
+CMD ["--color", "red"]
+
+vi webapp-color-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webapp-green
+  labels:
+      name: webapp-green
+spec:
+  containers:
+  - name: simple-webapp
+    image: kodekloud/webapp-color
+    command: ["--color","green"]
+    
+Answer: --color green (the pod is created from an image, created from the Dockerfile.)
+
+09:
+Inspect the two files under directory webapp-color-3. What command is run at container startup?
+
+Assume the image was created from the Dockerfile in this folder
+
+$ vi Dockerfile2
+FROM python:3.6-alpine
+  
+RUN pip install flask
+
+COPY . /opt/
+
+EXPOSE 8080
+
+WORKDIR /opt
+
+ENTRYPOINT ["python", "app.py"]
+
+CMD ["--color", "red"]
+
+$ vi webapp-color-pod-2.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webapp-green
+  labels:
+      name: webapp-green
+spec:
+  containers:
+  - name: simple-webapp
+    image: kodekloud/webapp-color
+    command: ["python", "app.py"]
+    args: ["--color", "pink"]
+    
+Answer: python app.py --color pink
+
+10:
+Create a pod with the given specifications. By default it displays a blue background. Set the given command line arguments to change it to green
+
+$ kubectl run webapp-green --image=kodekloud/webapp-color --dry-run=client -o yaml >webapp-green.yaml
+
+$ vi webapp-green.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: webapp-green
+  name: webapp-green
+spec:
+  containers:
+  - args: ["--color", "green"]
+    image: kodekloud/webapp-color
+    name: webapp-green
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+$ kubectl apply -f webapp-green.yaml 
+pod/webapp-green created

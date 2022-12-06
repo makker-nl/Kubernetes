@@ -1,0 +1,82 @@
+01:
+--
+
+02: 
+
+$ kubectl run nginx-pod --image=nginx:alpine
+
+03
+$ kubectl run redis --image=redis:alpine  --dry-run=client -o yaml> redis.yaml
+Edit:
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: redis
+    tier: db
+  name: redis
+spec:
+  containers:
+  - image: redis:alpine
+    name: redis
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+
+$ kubectl apply -f redis.yaml
+
+Or:
+$ kubectl run redis --image=redis:alpine  --labels=tier=db
+
+04:
+$ kubectl expose pod redis --name=redis-service --port=6379 --type=ClusterIP --dry-run=client  -o yaml>redis-svc.yaml
+View:
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    run: redis
+    tier: db
+  name: redis-service
+spec:
+  ports:
+  - port: 6379
+    protocol: TCP
+    targetPort: 6379
+  selector:
+    run: redis
+    tier: db
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+$ kubectl apply -f redis-svc.yaml
+
+Or 
+$ kubectl expose pod redis --name=redis-service --port=6379 --target-port=6379
+$ kubectl describe service redis-service
+
+05:
+$ kubectl create deployment webapp --image=kodekloud/webapp-color  --replicas=3
+
+06:
+$ kubectl run custom-nginx --image=nginx --port=8080
+
+07:
+$ kubectl create namespace dev-ns
+
+08: 
+$ kubectl create deployment redis-deploy --image=redis --replicas=2 -n dev-ns
+
+09
+$ kubectl run httpd --image=httpd:alpine
+$ kubectl expose pod httpd  --port=80 --type=ClusterIP --dry-run=client  
+$ # kubectl get service httpd
+NAME    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+httpd   ClusterIP   10.104.167.76   <none>        80/TCP    10s
+
+Or:
+$ kubectl run httpd --image=httpd:alpine --port=80 --expose --dry-run=client -o yaml

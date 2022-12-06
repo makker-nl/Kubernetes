@@ -1,0 +1,7 @@
+# Do not create pod, but output to yaml file.
+kubectl run redis --image=redis123 --dry-run=client -o yaml > pod.yaml
+
+kubectl apply -f pod.yaml 
+
+kubectl edit pod redis
+  --> Scroll down to spec: containers: - image --> change redis123 to redis

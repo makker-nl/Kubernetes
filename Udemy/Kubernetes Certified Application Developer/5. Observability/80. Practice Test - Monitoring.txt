@@ -1,0 +1,12 @@
+02: Let us deploy metrics-server to monitor the PODs and Nodes. Pull the git repository for the deployment files.
+
+
+Run: git clone https://github.com/kodekloudhub/kubernetes-metrics-server.git
+
+03: eploy the metrics-server by creating all the components downloaded.
+
+Run the kubectl create -f . command from within the downloaded repository.
+root@controlplane:~# cd kubernetes-metrics-server/
+root@controlplane:~/kubernetes-metrics-server# kubectl create -f .
+
+
