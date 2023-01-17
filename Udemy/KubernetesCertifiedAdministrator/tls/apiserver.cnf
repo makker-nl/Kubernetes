@@ -1,10 +1,37 @@
+# OpenSSL configuration to generate a new key with signing requst for a x509v3
+# multidomain certificate
+# openssl req -config bla.cnf -new | tee csr.pem
+#
+# or
+# openssl req -config bla.cnf -new -out csr.pem
 [ req ]
-req_extensions = v3_req
-distinguised_name = req_distinguised_name
+default_bits       = 2048
+default_md         = sha256
+default_keyfile    = private.key
+prompt             = no
+encrypt_key        = no
+
+# base request
+distinguished_name = req_distinguished_name
+
+# extensions
+req_extensions     = v3_req
+
+# distinguished_name
+[ req_distinguished_name ]
+#countryName            = "NL"
+#stateOrProvinceName    = "UtrechtNL"
+localityName           = "Utrecht"
+organizationName       = "Oracle"
+organizationalUnitName = "Consulting"
+commonName             = "kube-apiserver"
+
+# req_extensions
 [ v3_req ]
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation
 subjectAltName = @alt_names
+
 [ alt_names ]
 DNS.1 = kubernetes
 DNS.2 = kubernetes.default
