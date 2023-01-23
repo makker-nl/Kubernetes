@@ -3,3 +3,5 @@
 **/*.csr
 **/*.crt
 **/*.srl
+/Udemy/KubernetesCertifiedAdministrator/**/*.pdf
+/Udemy/KubernetesCertifiedApplicationDeveloper/**/*.pdf
