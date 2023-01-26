@@ -19,8 +19,8 @@ req_extensions     = v3_req
 
 # distinguished_name
 [ req_distinguished_name ]
-#countryName            = "NL"
-#stateOrProvinceName    = "UtrechtNL"
+countryName            = "NL"
+stateOrProvinceName    = "UtrechtNL"
 localityName           = "Utrecht"
 organizationName       = "Oracle"
 organizationalUnitName = "Consulting"
