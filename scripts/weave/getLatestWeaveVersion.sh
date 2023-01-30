@@ -24,5 +24,5 @@ WEAVE_YAML_URL=${WEAVE_YAML_URL%%\"*}
 WEAVE_YAML_URL="$GIT_URL/${WEAVE_YAML_URL}"
 # Echo the result:
 echo Latest Weave Deamon Set YAML: $WEAVE_YAML_URL
-echo Install latetest Weave version $WEAVE_VER from $WEAVE_YAML_URL:
+echo Install latest Weave version $WEAVE_VER from $WEAVE_YAML_URL:
 wget -q $WEAVE_YAML_URL --output-document - | kubectl apply -f -
